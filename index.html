@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -180,9 +179,9 @@
       document.getElementById('card').style.display = "none";
       document.getElementById('btnYes').style.display = "none";
       document.getElementById('btnNo').style.display = "none";
-      document.getElementById('result').innerHTML = \`
-        <p>Вы знаете \${knownCount} из \${trainingSet.length} слов.</p>
-      \`;
+      document.getElementById('result').innerHTML = `
+        <p>Вы знаете ${knownCount} из ${trainingSet.length} слов.</p>
+      `;
     }
   }
 
@@ -191,86 +190,7 @@
     currentIndex++;
     showCard();
   }
-<<script>
-  let words = [];
-
-  function addWord() {
-    const word = document.getElementById('word').value.trim();
-    const translation = document.getElementById('translation').value.trim();
-    if (word && translation) {
-      words.push({ word, translation });
-      document.getElementById('word').value = '';
-      document.getElementById('translation').value = '';
-      alert('Слово добавлено!');
-    }
-  }
-
-  function downloadCSV() {
-    const csv = words.map(w => `${w.word},${w.translation}`).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'vocab.csv';
-    a.click();
-  }
-
-  function clearWords() {
-    words = [];
-    alert('Словарь очищен!');
-  }
-
-  function startTraining() {
-    if (words.length === 0) {
-      alert('Словарь пуст!');
-      return;
-    }
-    currentIndex = 0;
-    knownCount = 0;
-    document.getElementById('card').style.display = 'block';
-    showCard();
-  }
-
-  let currentIndex = 0;
-  let knownCount = 0;
-
-  function showCard() {
-    const word = words[currentIndex];
-    if (!word) {
-      document.getElementById('card').innerHTML = `<p>Тренировка завершена. Знание слов: ${knownCount}/${words.length}</p>`;
-      return;
-    }
-
-    document.getElementById('card').innerHTML = `
-      <p><strong>${word.word}</strong></p>
-      <button onclick="markAnswer(true)">✅ Знаю</button>
-      <button onclick="markAnswer(false)">❌ Не знаю</button>
-    `;
-  }
-
-  function markAnswer(isKnown) {
-    if (isKnown) knownCount++;
-    currentIndex++;
-    showCard();
-  }
-
-  function loadCSVFromFile(input) {
-    const file = input.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const lines = e.target.result.split('\n');
-      for (let line of lines) {
-        const [word, translation] = line.split(',');
-        if (word && translation) {
-          words.push({ word: word.trim(), translation: translation.trim() });
-        }
-      }
-      alert('Слова загружены из файла!');
-    };
-    reader.readAsText(file);
-  }
-</script>>
+</script>
 
 </body>
 </html>
