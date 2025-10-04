@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Мой словарь</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Мой словарь</h1>
+  <input id="hebrewInput" placeholder="Иврит" />
+  <input id="russianInput" placeholder="Перевод" />
+  <button onclick="addWord()">Добавить</button>
+  <br/><br/>
+  <input type="file" id="fileInput" />
+  <button onclick="uploadCSV()">Загрузить .csv</button>
+  <br/><br/>
+  <button onclick="downloadCSV()">Скачать словарь</button>
+  <button onclick="clearVocab()">Очистить словарь</button>
+  <br/><br/>
+  <button onclick="startTraining()">Начать тренировку</button>
+  <script src="app.js"></script>
+</body>
+</html>
