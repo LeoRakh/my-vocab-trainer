@@ -1,25 +1,182 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <link rel="manifest" href="manifest.json" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Мой словарь</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Личный тренажёр слов</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .input-group {
+      margin: 10px 0;
+    }
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 160px;
+      margin-right: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px 5px;
+      cursor: pointer;
+    }
+    #card {
+      background: white;
+      padding: 40px;
+      font-size: 32px;
+      margin: 30px auto;
+      width: 300px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    #result {
+      font-size: 20px;
+      margin-top: 20px;
+    }
+    #upload {
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Мой словарь</h1>
-  <input id="hebrewInput" placeholder="Иврит" />
-  <input id="russianInput" placeholder="Перевод" />
+
+<h1>Мой словарь</h1>
+
+<div class="input-group">
+  <input type="text" id="wordInput" placeholder="Слово (иврит с ניקוד)">
+  <input type="text" id="translationInput" placeholder="Перевод (рус)">
   <button onclick="addWord()">Добавить</button>
-  <br/><br/>
-  <input type="file" id="fileInput" />
-  <button onclick="uploadCSV()">Загрузить .csv</button>
-  <br/><br/>
-  <button onclick="downloadCSV()">Скачать словарь</button>
-  <button onclick="clearVocab()">Очистить словарь</button>
-  <br/><br/>
-  <button onclick="startTraining()">Начать тренировку</button>
-  <script src="app.js"></script>
+</div>
+
+<div class="input-group">
+  <input type="file" id="upload" accept=".csv">
+  <button onclick="loadCSV()">Загрузить .csv</button>
+</div>
+
+<div class="input-group">
+  <button onclick="exportCSV()">📤 Скачать словарь</button>
+  <button onclick="clearVocabulary()">🧹 Очистить словарь</button>
+</div>
+
+<button onclick="startTraining()">▶️ Начать тренировку</button>
+
+<div id="card" style="display:none;"></div>
+
+<div>
+  <button onclick="markAnswer(false)" id="btnNo" style="display:none;">Не знаю</button>
+  <button onclick="markAnswer(true)" id="btnYes" style="display:none;">Я знаю</button>
+</div>
+
+<div id="result"></div>
+
+<script>
+  let wordList = JSON.parse(localStorage.getItem("myWords") || "[]");
+  let trainingSet = [];
+  let currentIndex = 0;
+  let knownCount = 0;
+
+  function saveWords() {
+    localStorage.setItem("myWords", JSON.stringify(wordList));
+  }
+
+  function addWord() {
+    const word = document.getElementById('wordInput').value.trim();
+    const translation = document.getElementById('translationInput').value.trim();
+    if (word && translation) {
+      wordList.push({ word, translation });
+      saveWords();
+      document.getElementById('wordInput').value = '';
+      document.getElementById('translationInput').value = '';
+      alert("Слово добавлено!");
+    }
+  }
+
+  function loadCSV() {
+    const file = document.getElementById('upload').files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const lines = e.target.result.split(/\r?\n/);
+      for (const line of lines) {
+        const [word, translation] = line.split(',');
+        if (word && translation) {
+          wordList.push({ word: word.trim(), translation: translation.trim() });
+        }
+      }
+      saveWords();
+      alert("Слова из файла добавлены!");
+    };
+    reader.readAsText(file);
+  }
+
+  function exportCSV() {
+    if (wordList.length === 0) {
+      alert("Словарь пуст.");
+      return;
+    }
+    let csv = "word,translation\n";
+    for (const entry of wordList) {
+      csv += `${entry.word},${entry.translation}\n`;
+    }
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "my_vocab.csv";
+    link.click();
+  }
+
+  function clearVocabulary() {
+    if (confirm("Удалить все слова?")) {
+      wordList = [];
+      saveWords();
+      alert("Словарь очищен.");
+    }
+  }
+
+  function startTraining() {
+    if (wordList.length < 1) {
+      alert("Нет слов для тренировки. Добавьте хотя бы одно.");
+      return;
+    }
+    trainingSet = [...wordList].sort(() => 0.5 - Math.random()).slice(0, 10);
+    currentIndex = 0;
+    knownCount = 0;
+    document.getElementById('result').textContent = '';
+    document.getElementById('btnYes').style.display = "inline-block";
+    document.getElementById('btnNo').style.display = "inline-block";
+    showCard();
+  }
+
+  function showCard() {
+    if (currentIndex < trainingSet.length) {
+      const word = trainingSet[currentIndex].word;
+      document.getElementById('card').textContent = word;
+      document.getElementById('card').style.display = "block";
+    } else {
+      document.getElementById('card').style.display = "none";
+      document.getElementById('btnYes').style.display = "none";
+      document.getElementById('btnNo').style.display = "none";
+      document.getElementById('result').innerHTML = `
+        <p>Вы знаете ${knownCount} из ${trainingSet.length} слов.</p>
+      `;
+    }
+  }
+
+  function markAnswer(isKnown) {
+    if (isKnown) knownCount++;
+    currentIndex++;
+    showCard();
+  }
+</script>
+
 </body>
 </html>
